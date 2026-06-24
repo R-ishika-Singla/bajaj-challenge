@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chitkara Full Stack Challenge</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .main-box {
+            max-width: 750px;
+            background: white;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h2 {
+            margin-top: 0;
+            color: #1a365d;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        button {
+            background-color: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            font-weight: 600;
+        }
+        button:hover {
+            background-color: #2c5282;
+        }
+        .error {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .card {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .card h4 { margin: 0; color: #2b6cb0; font-size: 14px; }
+        .card p { margin: 8px 0 0 0; font-size: 20px; font-weight: bold; color: #2c5282; }
+        pre {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-box">
+        <h2>Chitkara Full Stack Engineering Challenge</h2>
+        <p style="color: #718096; margin-top: -5px;">Bajaj Finserv Health Evaluation Panel</p>
+        
+        <label style="font-weight: 600; display: block; margin-bottom: 8px;">Enter Node List (JSON Array Format):</label>
+        <textarea id="jsonInput">["A->B", "A->C", "B->D", "X->Y", "Y->Z", "Z->X", "hello", "G->H", "G->H"]</textarea>
+        
+        <button id="submitBtn">Process Hierarchy</button>
+        
+        <div id="errorBox" class="error" style="display: none;"></div>
+        
+        <div id="outputArea" style="display: none;">
+            <div class="section-title">📊 Metrics Overview</div>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>Total Trees</h4>
+                    <p id="treeStat">0</p>
+                </div>
+                <div class="card">
+                    <h4>Total Cycles</h4>
+                    <p id="cycleStat">0</p>
+                </div>
+                <div class="card">
+                    <h4>Largest Root</h4>
+                    <p id="rootStat">-</p>
+                </div>
+            </div>
+            
+            <div class="section-title">🌲 Clean Structure Output</div>
+            <pre id="jsonResponse"></pre>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ YAHA APNA RENDER KA LIVE LINK PASTE KARO (Bina peeche /bfhl lagaye)
+        const API_BASE_URL = "https://bajaj-challenge-backend.onrender.com"; 
+
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const inputVal = document.getElementById('jsonInput').value;
+            const errorBox = document.getElementById('errorBox');
+            const outputArea = document.getElementById('outputArea');
+            
+            errorBox.style.display = 'none';
+            outputArea.style.display = 'none';
+            
+            let parsedData;
+            try {
+                parsedData = JSON.parse(inputVal);
+                if (!Array.isArray(parsedData)) {
+                    throw new Error("Input must be a valid JSON array.");
+                }
+            } catch (e) {
+                errorBox.innerText = "Formatting Error: Make sure it's a valid JSON array like ['A->B'].";
+                errorBox.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/bfhl`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: parsedData })
+                });
+                
+                if (!response.ok) {
+                    throw new Error("Server responded with an error status.");
+                }
+                
+                const resData = await response.json();
+                
+                // Fill stats
+                document.getElementById('treeStat').innerText = resData.summary.total_trees;
+                document.getElementById('cycleStat').innerText = resData.summary.total_cycles;
+                document.getElementById('rootStat').innerText = resData.summary.largest_tree_root || "None";
+                
+                // Fill JSON string
+                document.getElementById('jsonResponse').innerText = JSON.stringify(resData, null, 2);
+                outputArea.style.display = 'block';
+                
+            } catch (err) {
+                errorBox.innerText = "Network Error: Failed to connect to backend server.";
+                errorBox.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

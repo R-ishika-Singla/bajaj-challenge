@@ -210,7 +210,7 @@ app.post('/bfhl', (req, res) => {
 
         const result = {
             "user_id": "rishikasingla_24062026", 
-            "email_id": "rishika.singla@college.edu", 
+            "email_id": "rishika2273.be23@chitkara.edu.in", 
             "college_roll_number": "2310992273", 
             "hierarchies": hierarchies,
             "invalid_entries": invalid_entries,
